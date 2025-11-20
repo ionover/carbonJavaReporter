@@ -19,7 +19,6 @@ import java.util.Map;
 @Service
 public class CarboneService {
 
-    private static final String TEMPLATE_ID = "SOME_ID";
     private static final String CARBONE_URL = "http://carbone:4000"; // или localhost:4000
 
     private final ObjectMapper objectMapper;
@@ -33,7 +32,7 @@ public class CarboneService {
         this.carboneBaseUrl = "http://10.10.10.61:4000";
     }
 
-    public byte[] renderHelloReport(String text) {
+    public byte[] renderHelloReport(String text, String templateId) {
         Map<String, Object> data = Map.of(
                 "project", Map.of("name", "Test project"),
                 "date", LocalDate.now().toString(),
@@ -45,7 +44,7 @@ public class CarboneService {
                 "convertTo", "pdf"
         );
 
-        String url = CARBONE_URL + "/render/" + TEMPLATE_ID;
+        String url = CARBONE_URL + "/render/" + templateId;
 
         ResponseEntity<byte[]> response = restTemplate.postForEntity(url, body, byte[].class);
 
@@ -81,9 +80,15 @@ public class CarboneService {
                 throw new IllegalStateException("Carbone вернул некорректный ответ: " + response.getStatusCode());
             }
 
-            // Ожидаем JSON вида {"templateId":"..."}
+            // Ожидаем JSON вида {"success":true,"data":{"templateId":"..."}}
             JsonNode root = objectMapper.readTree(response.getBody());
-            JsonNode idNode = root.get("templateId");
+            JsonNode dataNode = root.get("data");
+
+            if (dataNode == null || dataNode.isNull()) {
+                throw new IllegalStateException("В ответе Carbone нет поля data: " + response.getBody());
+            }
+
+            JsonNode idNode = dataNode.get("templateId");
 
             if (idNode == null || idNode.isNull()) {
                 throw new IllegalStateException("В ответе Carbone нет поля templateId: " + response.getBody());
