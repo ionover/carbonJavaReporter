@@ -13,3 +13,6 @@ services:
       CARBONE_HTTP_PORT: "4000"
       # Логи по желанию
       CARBONE_LOG_LEVEL: "info"
+    volumes:
+      - ./trial.carbone-licensce:/app/config/trial.carbone-licensce
+      - ./config.json:/app/config/config.json

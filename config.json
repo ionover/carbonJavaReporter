@@ -1,0 +1,10 @@
+{
+  "port": 4000,
+  "bind": "127.0.0.1",
+  "factories": 1,
+  "attempts": 1,
+  "authentication": false,
+  "jwtAudience": "carbone-ee",
+  "templatePathRetention": 0,
+  "maxDataSize": 62914560
+}
