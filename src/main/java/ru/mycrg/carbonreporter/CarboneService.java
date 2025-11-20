@@ -19,18 +19,24 @@ import ru.mycrg.carbonreporter.dto.CoordinateReportDataDto;
 public class CarboneService {
 
     private final ObjectMapper objectMapper;
-    private final RestTemplate restTemplate; // или WebClient
+    private final RestTemplate restTemplate;
+    private final ImageService imageService;
     private final String carboneBaseUrl;
 
     public CarboneService(ObjectMapper objectMapper,
-                          RestTemplate restTemplate) {
+                          RestTemplate restTemplate,
+                          ImageService imageService) {
         this.objectMapper = objectMapper;
         this.restTemplate = restTemplate;
+        this.imageService = imageService;
         this.carboneBaseUrl = "http://10.10.10.61:4000";
     }
 
     public byte[] renderCoordinateReport(CoordinateReportDataDto reportData) {
         try {
+            String preparedPicture = imageService.prepareImageForCarbone(reportData.getD().getPicture());
+            reportData.getD().setPicture(preparedPicture);
+
             CarboneRenderRequest requestBody = new CarboneRenderRequest(reportData.getD(), "pdf");
 
             HttpHeaders headers = new HttpHeaders();
