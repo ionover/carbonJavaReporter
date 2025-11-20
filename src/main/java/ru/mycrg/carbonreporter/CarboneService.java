@@ -42,11 +42,28 @@ public class CarboneService {
                 "convertTo", "pdf"
         );
 
-        String url = carboneBaseUrl + "/render/" + templateId;
+        String renderUrl = carboneBaseUrl + "/render/" + templateId;
+        ResponseEntity<String> renderResponse = restTemplate.postForEntity(renderUrl, body, String.class);
 
-        ResponseEntity<byte[]> response = restTemplate.postForEntity(url, body, byte[].class);
-
-        return response.getBody();
+        try {
+            JsonNode root = objectMapper.readTree(renderResponse.getBody());
+            JsonNode dataNode = root.get("data");
+            JsonNode renderIdNode = dataNode.get("renderId");
+            
+            if (renderIdNode == null || renderIdNode.isNull()) {
+                throw new IllegalStateException("В ответе Carbone нет renderId: " + renderResponse.getBody());
+            }
+            
+            String renderId = renderIdNode.asText();
+            
+            String downloadUrl = carboneBaseUrl + "/render/" + renderId;
+            ResponseEntity<byte[]> pdfResponse = restTemplate.getForEntity(downloadUrl, byte[].class);
+            
+            return pdfResponse.getBody();
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при рендеринге отчёта", e);
+        }
     }
 
     public String postTemplate(MultipartFile file) {
