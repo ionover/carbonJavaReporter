@@ -12,9 +12,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.time.LocalDate;
-import java.util.Map;
+import ru.mycrg.carbonreporter.dto.CarboneRenderRequest;
+import ru.mycrg.carbonreporter.dto.CoordinateReportDataDto;
 
 @Service
 public class CarboneService {
@@ -30,39 +29,28 @@ public class CarboneService {
         this.carboneBaseUrl = "http://10.10.10.61:4000";
     }
 
-    public byte[] renderHelloReport(String text, String templateId) {
-        Map<String, Object> data = Map.of(
-                "project", Map.of("name", "Test project"),
-                "date", LocalDate.now().toString(),
-                "text", text
-        );
-
-        Map<String, Object> body = Map.of(
-                "data", data,
-                "convertTo", "pdf"
-        );
-
-        String renderUrl = carboneBaseUrl + "/render/" + templateId;
-        ResponseEntity<String> renderResponse = restTemplate.postForEntity(renderUrl, body, String.class);
-
+    public byte[] renderCoordinateReport(CoordinateReportDataDto reportData) {
         try {
-            JsonNode root = objectMapper.readTree(renderResponse.getBody());
-            JsonNode dataNode = root.get("data");
-            JsonNode renderIdNode = dataNode.get("renderId");
-            
-            if (renderIdNode == null || renderIdNode.isNull()) {
-                throw new IllegalStateException("В ответе Carbone нет renderId: " + renderResponse.getBody());
+            CarboneRenderRequest requestBody = new CarboneRenderRequest(reportData, "pdf");
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<CarboneRenderRequest> entity = new HttpEntity<>(requestBody, headers);
+
+            // ?download=true — чтобы Carbone сразу вернул бинарный PDF
+            String url = carboneBaseUrl + "/render/" + reportData.getTemplateId() + "?download=true";
+
+            ResponseEntity<byte[]> response =
+                    restTemplate.postForEntity(url, entity, byte[].class);
+
+            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+                throw new IllegalStateException("Carbone вернул некорректный ответ: " + response.getStatusCode());
             }
-            
-            String renderId = renderIdNode.asText();
-            
-            String downloadUrl = carboneBaseUrl + "/render/" + renderId;
-            ResponseEntity<byte[]> pdfResponse = restTemplate.getForEntity(downloadUrl, byte[].class);
-            
-            return pdfResponse.getBody();
-            
+
+            return response.getBody();
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка при рендеринге отчёта", e);
+            throw new RuntimeException("Ошибка при рендере отчёта через Carbone", e);
         }
     }
 

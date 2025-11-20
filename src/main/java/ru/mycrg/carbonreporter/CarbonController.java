@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import ru.mycrg.carbonreporter.dto.CoordinateReportDataDto;
 
 @RestController
 public class CarbonController {
@@ -20,9 +21,8 @@ public class CarbonController {
     }
 
     @PostMapping("/give-me-pdf")
-    public ResponseEntity<byte[]> generateSimpleReport(@RequestBody String text,
-                                                       @RequestBody String templateId) {
-        byte[] pdfBytes = carboneService.renderHelloReport(text, templateId);
+    public ResponseEntity<byte[]> generateSimpleReport(@RequestBody CoordinateReportDataDto dto) {
+        byte[] pdfBytes = carboneService.renderCoordinateReport(dto);
 
         return ResponseEntity.ok()
                              .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=report.pdf")
@@ -31,8 +31,8 @@ public class CarbonController {
     }
 
     @PostMapping("/save-me-pdf")
-    public void saveSimpleReport(@RequestBody ReportRequest reportRequest) {
-        byte[] pdfBytes = carboneService.renderHelloReport(reportRequest.getText(), reportRequest.getTemplateId());
+    public void saveSimpleReport(@RequestBody CoordinateReportDataDto dto) {
+        byte[] pdfBytes = carboneService.renderCoordinateReport(dto);
 
         fileService.saveFile(pdfBytes);
     }
