@@ -31,9 +31,8 @@ public class CarbonController {
     }
 
     @PostMapping("/save-me-pdf")
-    public void saveSimpleReport(@RequestBody String text,
-                                 @RequestBody String templateId) {
-        byte[] pdfBytes = carboneService.renderHelloReport(text, templateId);
+    public void saveSimpleReport(@RequestBody ReportRequest reportRequest) {
+        byte[] pdfBytes = carboneService.renderHelloReport(reportRequest.getText(), reportRequest.getTemplateId());
 
         fileService.saveFile(pdfBytes);
     }
