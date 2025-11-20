@@ -37,7 +37,10 @@ public class CarboneService {
             String preparedPicture = imageService.prepareImageForCarbone(reportData.getD().getPicture());
             reportData.getD().setPicture(preparedPicture);
 
-            CarboneRenderRequest requestBody = new CarboneRenderRequest(reportData.getD(), "pdf");
+            System.out.println("Отправляем запрос в Carbone, templateId: " + reportData.getTemplateId());
+            System.out.println("Picture длина: " + (preparedPicture != null ? preparedPicture.length() : 0) + " символов");
+
+            CarboneRenderRequest requestBody = new CarboneRenderRequest(reportData.getD(), "docx");
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -47,6 +50,8 @@ public class CarboneService {
             // ?download=true — чтобы Carbone сразу вернул бинарный PDF
             String url = carboneBaseUrl + "/render/" + reportData.getTemplateId() + "?download=true";
 
+            System.out.println("URL: " + url);
+
             ResponseEntity<byte[]> response =
                     restTemplate.postForEntity(url, entity, byte[].class);
 
@@ -54,6 +59,7 @@ public class CarboneService {
                 throw new IllegalStateException("Carbone вернул некорректный ответ: " + response.getStatusCode());
             }
 
+            System.out.println("PDF получен, размер: " + response.getBody().length + " байт");
             return response.getBody();
         } catch (Exception e) {
             throw new RuntimeException("Ошибка при рендере отчёта через Carbone", e);

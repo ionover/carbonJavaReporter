@@ -17,7 +17,7 @@ public class FileService {
             // создаём папку, если её ещё нет
             Files.createDirectories(OUTPUT_DIR);
 
-            String fileName = "report-" + System.currentTimeMillis() + ".pdf";
+            String fileName = "report-" + System.currentTimeMillis() + ".docx";
             Path filePath = OUTPUT_DIR.resolve(fileName);
 
             Files.write(filePath, pdfBytes);
