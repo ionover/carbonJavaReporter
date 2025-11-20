@@ -31,7 +31,7 @@ public class CarboneService {
 
     public byte[] renderCoordinateReport(CoordinateReportDataDto reportData) {
         try {
-            CarboneRenderRequest requestBody = new CarboneRenderRequest(reportData, "pdf");
+            CarboneRenderRequest requestBody = new CarboneRenderRequest(reportData.getD(), "pdf");
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
