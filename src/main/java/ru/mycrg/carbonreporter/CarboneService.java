@@ -19,8 +19,6 @@ import java.util.Map;
 @Service
 public class CarboneService {
 
-    private static final String CARBONE_URL = "http://carbone:4000"; // или localhost:4000
-
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate; // или WebClient
     private final String carboneBaseUrl;
@@ -44,7 +42,7 @@ public class CarboneService {
                 "convertTo", "pdf"
         );
 
-        String url = CARBONE_URL + "/render/" + templateId;
+        String url = carboneBaseUrl + "/render/" + templateId;
 
         ResponseEntity<byte[]> response = restTemplate.postForEntity(url, body, byte[].class);
 
